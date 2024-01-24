@@ -1,0 +1,42 @@
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.metrics import accuracy_score
+
+# Load the Wine dataset
+wine = load_wine()
+X, y = wine.data, wine.target
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a Decision Tree model
+tree_model = DecisionTreeClassifier(random_state=42)
+tree_model.fit(X_train, y_train)
+
+# Bagging Classifier with Decision Tree as base model
+bagging_model = BaggingClassifier(estimator=DecisionTreeClassifier(random_state=42), n_estimators=100, random_state=99)
+bagging_model.fit(X_train, y_train)
+
+# Gradient Boosting Classifier
+gradient_boosting_model = GradientBoostingClassifier(n_estimators=50, random_state=42)
+gradient_boosting_model.fit(X_train, y_train)
+
+# Create a Voting Classifier with Bagging and Gradient Boosting models
+voting_model = VotingClassifier(estimators=[('bagging', bagging_model),
+                                            ('AdaBoost', adaboost_model)], voting='hard')
+voting_model.fit(X_train, y_train)
+
+
+# Evaluate individual classifiers
+classifiers = [
+    ('bagging', bagging_model),
+    ('gradient_boosting', gradient_boosting_model),
+    ('voting', voting_model)
+]
+
+for clf_name, clf in classifiers:
+    y_pred = clf.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"{clf_name} accuracy: {accuracy}")
